@@ -45,50 +45,7 @@ time = 11300
 # Offset of days
 offset = 6	
 	
-for day in range(0,4):
-	for f in range(0, 9):
-		
-		data = np.load('./preproc_data2/%s.npy' % (meteo_vars[f]))
-		ddata = data[offset+day:time+offset+day,:]
-		karr = np.empty(0)
-		karri = 0
-		for loc in range (0, locations):
-			# TODO: Preserve location number in array so it can be mapped later
-			ti = pd.DataFrame(ddata[:,loc])
-			
-			z = zs(c, ti)
-			
-			if abs(z) < 1.96:
-				continue
-			
-			# Ugly bad hack in order to grow data frame from nothing
-			# There might be a better way to do this, I don't know pandas or
-			# python very well
-			
-			#TODO: Test this part...
-			
-			# In the first loop we label all features that have some sort of
-			# correlation with 
-			#pdb.set_trace()
-			
-			if st[day].shape[0] == 0  and karr.shape[0] == 0:
-				karr = ti.as_matrix()
-				karri = loc
-			elif st[day].shape[0] == 0:
-				pdb.set_trace()
-				st[day] = pd.DataFrame(np.concatenate((karr, ti.as_matrix()), axis=1))
-			else:
-				pdb.set_trace()
-				st[day] = pd.concat([st[day], ti], axis=1)
-			# In subsequent loops, we either prune features from the previous
-			# set of features or discard the current feature depending on 
-			# how previous features and the current feature correlate with
-			# the class attribute and each other
-			if day != 0:
-				if disc_prune(ti, st[day-1]) == False:
-					continue
-				else:
-					st[day] = st[day].concat(ti, axis=1)
+-
 					
 					
 				
