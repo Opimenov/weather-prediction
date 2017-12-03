@@ -106,6 +106,7 @@ time = 11300
 offset = 6	
 bflist = [[], [], [], [], [], [], [], [], []]
 	
+<<<<<<< HEAD
 
 for type in range(0, 9):
 
@@ -179,6 +180,12 @@ for type in range(0, 9):
 			#		continue
 			#	else:
 			#		st[day] = st[day].concat(ti, axis=1)
+=======
+-
+					
+					
+				
+>>>>>>> 9c4ecf3e46cb92a708350b08e0a14b9013457233
 		
 		bflist[type] = flist
 		print(flist)
