@@ -21,8 +21,8 @@ def genmapvars(genfile=False):
 
 
 	for i in range(0, length):
-		loc = random.randint(1, 5328) 
-		day = random.randint(7,10)
+		loc = random.randint(0, 5327) 
+		day = random.randint(6,9)
 		var = meteo_vars[random.randint(0,8)]
 		string = '%d_%s_%d' % (loc, var, day)
 		random.randint(6,9)
