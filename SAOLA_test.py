@@ -9,14 +9,14 @@ import time as tm
 def zs(crf1, crf2):
 	# Pearson correlation coefficient, r
 	r = crf1[0].corr(crf2[0])
-	print('Pearson coefficient %f' % (r))
+	#print('Pearson coefficient %f' % (r))
 	# Fisher Z transformation on r'
 	rp = np.arctanh(r)
-	print('Fisher Z trans %f' % (rp))
+	#print('Fisher Z trans %f' % (rp))
 	# Standard Error Calculation for transformed correlation r'
 	N = time
 	srp = 1/((N - 3.0)**(0.5))
-	print('Z-score: %f' %(rp/srp))
+	#print('Z-score: %f' %(rp/srp))
 	return rp/srp
 
 # Discard feature or prune features from the previous set based on current feature
@@ -43,22 +43,50 @@ def zs(crf1, crf2):
 
 
 def disc_prune(fi, flist, ddata):
-	 #Probably kind of bad to refer to c as a free var here but whatever
+
+	#iterate across the features stored in the selected feature set
 	
-	 #iterate across the features stored in the selected feature set
-	for i in range(0, len(flist)):
+	# need to iterate from top of array since we're deleting elements as we go
+	for i in xrange(len(flist)-1, -1, -1):
+		#pdb.set_trace()
 		y = pd.DataFrame(ddata[:,flist[i]])
 		
 		# This checks for redundancy of the feature
-		if abs(zs(y, c)) > abs(zs(fi, c)) and abs(zs(fi, y)) > 1.96:
+		if abs(zs(y, c)) > abs(zs(fi, c)) and abs(zs(fi, y)) >= 1.96:
 			#pdb.set_trace()
 			return False
 		
 		# Newly found fi makes Y redundant -- fi is closer to the target feature
 		# than fi
-		if abs(zs(fi, c)) > abs(zs(y, c)) and abs(zs(fi, y)) > 1.96:
+		if abs(zs(fi, c)) > abs(zs(y, c)) and abs(zs(fi, y)) >= 1.96:
+			#print('deleting featuer at %d' % (i))
 			#pdb.set_trace()
 			del flist[i]
+	#if(len(flist) > 0):
+		#print('flist length now: %d' % (len(flist)))
+		
+def disc_prune2(fi, flist, ddata):
+
+	#iterate across the features stored in the selected feature set
+	
+	# need to iterate from top of array since we're deleting elements as we go
+	for i in xrange(len(flist)-1, -1, -1):
+		#pdb.set_trace()
+		y = pd.DataFrame(ddata[:,flist[i]])
+		
+		# This checks for redundancy of the feature
+		if abs(zs(y, c)) > abs(zs(fi, c)) and abs(zs(fi, y)) >= abs(zs(fi, c)):
+			#pdb.set_trace()
+			return False
+		
+		# Newly found fi makes Y redundant -- fi is closer to the target feature
+		# than fi
+		if abs(zs(fi, c)) > abs(zs(y, c)) and abs(zs(fi, y)) >= abs(zs(fi, c)):
+			#print('deleting featuer at %d' % (i))
+			#pdb.set_trace()
+			del flist[i]
+	#if(len(flist) > 0):
+		#print('flist length now: %d' % (len(flist)))
 
 	
 meteo_vars = ['pw','t850','v850','u850','v300','u300','z1000','z500','z300']
@@ -78,19 +106,20 @@ time = 11300
 offset = 6	
 bflist = [[], [], [], [], [], [], [], [], []]
 	
-for day in range(0,4):
-	print('Processing day %d' % (day))
-	for type in range(0, 8):
-		
-		data = np.load('./preproc_data2/%s.npy' % (meteo_vars[type]))
+
+for type in range(0, 9):
+
+	print('Processing feature type %s' % (meteo_vars[type]))
+	data = np.load('./preproc_data2/%s.npy' % (meteo_vars[type]))
+	
+	for day in range(0,4):
 		ddata = data[offset+day:time+offset+day,:]
-		karr = np.empty(0)
-		karri = 0
-		
-		flist = bflist[type]
-		nextflist = cp.deepcopy(flist) #may not actually need a deep copy
-		
-		print('Processing feature type %s' % (meteo_vars[type]))
+	
+		flist = []
+		#flist = bflist[type]
+		nextflist = []
+	
+		print('Processing day %d' % (day))
 		for loc in range (0, locations):
 			# TODO: Preserve location number in array so it can be mapped later
 			ti = pd.DataFrame(ddata[:,loc])
@@ -110,12 +139,17 @@ for day in range(0,4):
 			
 			#pdb.set_trace()
 			
-			if( disc_prune(ti, flist, ddata) == False):
+			if( disc_prune2(ti, flist, ddata) == False):
 				continue
+				
+			flist.append(loc)
 			
-			print('adding feature location %d of type %s' % (loc, meteo_vars[type]))
+			#print('adding feature location %d of type %s' % (loc, meteo_vars[type]))
 			#flist.append('%d__%d_%s' % (loc, day, meteo_vars[f]))
-			nextflist.append(loc)
+			#if(day == 0):
+			#	nextflist.append(loc)
+			#else:
+			#	nextflist = flist + [loc]
 			#print('z score: %f' % (abs(z)))
 
 			#tm.sleep(5)
@@ -145,7 +179,9 @@ for day in range(0,4):
 			#		continue
 			#	else:
 			#		st[day] = st[day].concat(ti, axis=1)
-		print('Number of features found for %s on day %d: %d' % (meteo_vars[type], day, len(nextflist)))
+		
+		bflist[type] = flist
+		print(flist)
+		print('Number of features found for %s on day %d: %d' % (meteo_vars[type], day, len(flist)))
 		tm.sleep(5)
-		bflist[type] = nextflist
 	print('Processed day %d' % (day))
