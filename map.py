@@ -6,7 +6,7 @@ import numpy as np
 
 # Empty array to fetch all the relavant features in the CSV file.
 feature = []
-with open('kendall.csv') as csvfile:
+with open('./sample_data/generated/relevant_features/kendall.csv') as csvfile:
 	readCSV = csv.reader(csvfile)
 	# Fetching the 1st row
 	for row in itertools.islice(readCSV, 1):
@@ -17,7 +17,7 @@ with open('kendall.csv') as csvfile:
 		name=feature[0][i]
 		parts = name.split("_")
 		# Reading the longtitude_latitude xlsx file and parsing the sheet1
-		xl = pd.ExcelFile("longtitude_latitude2.5.xlsx")	
+		xl = pd.ExcelFile("./longtitude_latitude2.5.xlsx")	
 		df = xl.parse("Sheet1")
 		#Iterating through all the rows of xlsx file and comparing the ID field with the parts[0]. Parts[0] is the location we got from split.
 		for index, row in df.iterrows():
